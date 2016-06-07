@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace GenerarPasswords
@@ -19,54 +13,75 @@ namespace GenerarPasswords
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string password ="";
-            password =NewPassword.GenerarPass();
+            var password = NewPassword.GenerarPass();
             textBox1.Text = password;
         }
 
         public class NewPassword
         {
-            static char[] ValueAfanumeric = { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '!', '#', '$', '%', '&', '?', '¿' };
+            private static string Path = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%") +
+                                         "\\Documents\\lineas.txt";
+
+            private static string[] lines = File.ReadAllLines(@Path);
+
+            private static char[] ValueAfanumeric =
+            {
+                'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd',
+                'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
+                'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '!', '#', '$',
+                '%', '&', '?', '¿'
+            };
 
             public static string GenerarPass()
             {
                 Random ram = new Random();
-                int LogitudPass = ram.Next(50, 50);
-                string Password = String.Empty;
+                int logitudPass = ram.Next(50, 50);
+                string password = String.Empty;
 
-                for (int i = 0; i < LogitudPass; i++)
+                for (int i = 0; i < logitudPass; i++)
                 {
                     int rm = ram.Next(0, 2);
 
                     if (rm == 0)
                     {
-                        Password += ram.Next(0, 10);
+                        password += ram.Next(0, 10);
                     }
                     else
                     {
-                        Password += ValueAfanumeric[ram.Next(0, 59)];
+                        password += ValueAfanumeric[ram.Next(0, 59)];
                     }
                 }
-                
-                return Password;
-
+                foreach (string line in lines)
+                {
+                    if (line == password)
+                    {
+                        GenerarPass();
+                    }
+                    else
+                    {
+                        using (StreamWriter file = new StreamWriter(@Path, true))
+                        {
+                            file.WriteLine(password);
+                        }
+                        return password;
+                    }
+                }
+                using (StreamWriter file = new StreamWriter(@Path, true))
+                {
+                    file.WriteLine(password);
+                }
+                return password;
             }
         }
 
-        private void button1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (int) Keys.Enter)
+
+    private void button1_KeyPress(object sender, KeyPressEventArgs e)
             {
-                string password = "";
-                password = NewPassword.GenerarPass();
-                textBox1.Text = password;
+                if (e.KeyChar == (int) Keys.Enter)
+                {
+                    var password = NewPassword.GenerarPass();
+                    textBox1.Text = password;
+                }
             }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Ayuda Ayuda = new Ayuda();
-            Ayuda.Show();
         }
     }
-}
